@@ -11,7 +11,7 @@ import math
 image_center = (240, 320)
 
 
-def detect_landmark(_src, _alt):
+def detect_landmark(_src):
     # 图像逆时针旋转90度
     _src = cv.flip(cv.transpose(_src), 0)
     gray = cv.cvtColor(_src, cv.COLOR_RGB2GRAY)
@@ -125,9 +125,6 @@ def detect_landmark(_src, _alt):
     cv.circle(_src, (cx, cy), 2, (255, 255, 255), 2)
     cv.circle(_src, image_center, 2, (255, 255, 255), 2)
     cv.line(_src, image_center, (cx, cy), (255, 0, 0), 2)
-    # cv.putText(_src, "x: %d | y: %d | land_ag: %d | for_ag: %d | alt: %d" %
-    #            (x_bias, y_bias, landmark_angle, forward_angle, _alt),
-    #            (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
     return _src, x_bias, y_bias, landmark_angle, forward_angle
 

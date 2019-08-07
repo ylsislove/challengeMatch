@@ -122,10 +122,10 @@ class Detector:
         return x_bias, y_bias
 
     # 检测降落标志
-    def detect_landmark(self, alt):
+    def detect_landmark(self):
         self.save_all()
         self.frame = self.cvRead.read()
-        self.img, x, y, l_ag, f_ag = detect_landmark(self.frame, alt)
+        self.img, x, y, l_ag, f_ag = detect_landmark(self.frame)
         return x, y, l_ag, f_ag
 
     # 保存内存中的图片

@@ -76,7 +76,7 @@ class FnSet:
 
             # 检测landmark
             alt = self.command.get_alt()
-            x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
+            x, y, l_ag, f_ag = self.detector.detect_landmark()
 
             # 检测到landmark，进入追踪小车阶段
             if x is not None:
@@ -124,7 +124,7 @@ class FnSet:
 
             # 检测降落标志
             alt = self.command.get_alt()
-            x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
+            x, y, l_ag, f_ag = self.detector.detect_landmark()
 
             # 若5次未检测到landmark，进入搜索阶段
             if x is None:
@@ -180,7 +180,7 @@ class FnSet:
 
             # 检测降落标志
             alt = self.command.get_alt()
-            x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
+            x, y, l_ag, f_ag = self.detector.detect_landmark()
 
             # 若5次未检测到landmark，进入搜索阶段
             if x is None:
