@@ -162,10 +162,6 @@ class Controller:
 
     # --------------------- 无人机 上升下降 控制命令 ----------------------
 
-    # 获得高度
-    def get_alt(self):
-        return self.command.get_ALT()
-
     # 控制飞机上升
     def move_up(self):
         distance = speed = 10

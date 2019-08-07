@@ -34,7 +34,7 @@ class FnSet:
 
     # 检测当前飞机状态
     def check_stage(self):
-        alt = self.controller.get_alt()
+        alt = self.command.get_alt()
         # 当前激光测距高度是10cm左右，则返回无人机状态为将要起飞状态
         if 5 <= alt <= 15:
             return "takeoff"
@@ -44,13 +44,13 @@ class FnSet:
             return "None"
 
     # 获得当前高度值，并显示在屏幕上
-    def get_alt_and_show(self, counted=False):
-        alt = self.controller.get_alt()
-        if counted is False:
-            print("ALT: ", alt)
-        else:
-            print(self.count, "ALT: ", alt)
-        return alt
+    # def get_alt_and_show(self, counted=False):
+    #     alt = self.controller.get_alt()
+    #     if counted is False:
+    #         print("ALT: ", alt)
+    #     else:
+    #         print(self.count, "ALT: ", alt)
+    #     return alt
 
     # 记录无人机的动作命令
     def record(self, x, y, l_ag, f_ag, cur_alt, cmd):
@@ -63,11 +63,11 @@ class FnSet:
 
     def takeoff(self):
         self.controller.takeoff()
-        cur_alt = self.get_alt_and_show()
+        cur_alt = self.command.get_alt()
         tar_alt = 150
         while self.tar_mode == self.cur_mode and cur_alt < tar_alt:
             self.controller.move_up()
-            cur_alt = self.controller.get_alt()
+            cur_alt = self.command.get_alt()
             print("alt:", cur_alt)
         return "search"
     
@@ -83,7 +83,7 @@ class FnSet:
             t = time.time()
 
             # 检测landmark
-            alt = self.get_alt_and_show(True)
+            alt = self.command.get_alt()
             x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
 
             # 检测到landmark，进入追踪小车阶段
@@ -131,7 +131,7 @@ class FnSet:
             t = time.time()
 
             # 检测降落标志
-            alt = self.get_alt_and_show(True)
+            alt = self.command.get_alt()
             x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
 
             # 若5次未检测到landmark，进入搜索阶段
@@ -177,7 +177,7 @@ class FnSet:
 
         t = time.time()
         detect_num = 0
-        alt = self.controller.get_alt()
+        alt = self.command.get_alt()
         x = y = 0
         # 当当前模式等于目标模式的时候，进行循环
         while self.tar_mode == self.cur_mode and alt > 30 or abs(x) > 30 or abs(y) > 30:
@@ -187,7 +187,7 @@ class FnSet:
             t = time.time()
 
             # 检测降落标志
-            alt = self.get_alt_and_show(True)
+            alt = self.command.get_alt()
             x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
 
             # 若5次未检测到landmark，进入搜索阶段
@@ -223,7 +223,7 @@ class FnSet:
                 self.controller.move_small(x, y, l_ag)
                 self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
 
-            alt = self.controller.get_alt()
+            alt = self.command.get_alt()
 
             self.landmark_count += 1
 

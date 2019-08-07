@@ -41,7 +41,7 @@ class Command:
     def hover(self):
         self.sender.hover()
 
-    def get_ALT(self):
+    def get_alt(self):
         self.receiver.clear()
         self.receiver.receive()
         return self.receiver.ALT_ADDITION
@@ -50,4 +50,4 @@ class Command:
 if __name__ == "__main__":
     test = Command()
     while True:
-        print(test.get_ALT())
+        print(test.get_alt())
