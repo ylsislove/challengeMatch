@@ -4,7 +4,7 @@
 #
 
 import Ano_Command
-import time
+# import time
 
 
 class Controller:
@@ -103,12 +103,12 @@ class Controller:
         if angle_bias > 0:
             self.command.setCommand("turnR", angle, speed)
             self.record("turn right", angle, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
         # 控制右转对应的偏角
         elif angle_bias < 0:
             self.command.setCommand("turnL", angle, speed)
             self.record("turn left", angle, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
     # --------------------- 无人机 前进后退 控制命令 ----------------------
 
@@ -129,11 +129,11 @@ class Controller:
         if y_bias > 0:
             self.command.setCommand("back", distance, speed)
             self.record("go back", distance, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
         elif y_bias < 0:
             self.command.setCommand("forward", distance, speed)
             self.record("go forward", distance, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
     # --------------------- 无人机 左移右移 控制命令 ----------------------
 
@@ -154,11 +154,11 @@ class Controller:
         if x_bias > 0:
             self.command.setCommand("right", distance, speed)
             self.record("go right", distance, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
         elif x_bias < 0:
             self.command.setCommand("left", distance, speed)
             self.record("go left", distance, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
     # --------------------- 无人机 上升下降 控制命令 ----------------------
 
@@ -171,14 +171,14 @@ class Controller:
         distance = speed = 10
         self.command.setCommand("up", distance, speed)
         self.record("move up", distance, speed)
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
     # 控制飞机下降
     def move_down(self):
         distance = speed = 10
         self.command.setCommand("down", distance, speed)
         self.record("move down", distance, speed)
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
     # --------------------- 无人机 一键式操作 控制命令 ----------------------
 
@@ -256,10 +256,10 @@ class Controller:
         if angle_bias > 0:
             self.command.setCommand("turnR", angle, speed)
             self.record("turn right", angle, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
         # 控制飞机右转对应的偏角
         elif angle_bias < 0:
             self.command.setCommand("turnL", angle, speed)
             self.record("turn left", angle, speed)
-            time.sleep(0.1)
+            # time.sleep(0.1)
