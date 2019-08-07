@@ -25,6 +25,13 @@ class FnSet:
         # 日志字典，最后结束的时候，会回显到图像中
         self.log_dict = self.detector.log_dict
 
+        self.search_time = 0
+        self.search_count = 0
+        self.move2qr_time = 0
+        self.move2qr_count = 0
+        self.landmark_time = 0
+        self.landmark_count = 0
+
     # 检测当前飞机状态
     def check_stage(self):
         alt = self.controller.get_alt()
@@ -66,8 +73,15 @@ class FnSet:
     
     def search(self):
 
+        t = time.time()
+
         # 当当前模式等于目标模式的时候，进行循环
         while self.tar_mode == self.cur_mode:
+
+            new_time = time.time()
+            self.search_time += (new_time - t)
+            t = time.time()
+
             # 检测landmark
             alt = self.get_alt_and_show(True)
             x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
@@ -78,6 +92,11 @@ class FnSet:
                 self.controller.move(x, y, l_ag, f_ag, alt)
                 # 记录命令
                 self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
+
+                new_time = time.time()
+                self.search_time += (new_time - t)
+                self.search_count += 1
+
                 return "move2qr"
 
             # 未检测到landmark，且未达到最大高度，控制飞机升高
@@ -92,17 +111,25 @@ class FnSet:
             # 未检测到landmark，且在最大高度范围内，转圈搜索
             else:
                 self.controller.turn(-30, "big")
-                time.sleep(0.5)
+                # time.sleep(0.5)
 
             # 记录命令
             self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
 
+            self.search_count += 1
+
     # 追踪小车
     def move2qr(self):
 
+        t = time.time()
         detect_num = 0
         # 当当前模式等于目标模式的时候，进行循环
         while self.tar_mode == self.cur_mode:
+
+            new_time = time.time()
+            self.move2qr_time += (new_time - t)
+            t = time.time()
+
             # 检测降落标志
             alt = self.get_alt_and_show(True)
             x, y, l_ag, f_ag = self.detector.detect_landmark(alt)
@@ -113,7 +140,13 @@ class FnSet:
                 # 记录命令
                 self.record(x, y, l_ag, f_ag, alt, None)
                 if detect_num == 5:
+
+                    new_time = time.time()
+                    self.move2qr_time += (new_time - t)
+                    self.move2qr_count += 1
                     return "search"
+
+                self.move2qr_count += 1
                 continue
 
             detect_num = 0
@@ -132,17 +165,26 @@ class FnSet:
             self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
 
             if self.cur_mode == "normal" and 0 < alt < self.controller.min_alt:
+                new_time = time.time()
+                self.move2qr_time += (new_time - t)
+                self.move2qr_count += 1
                 return "landmark"
+
+            self.move2qr_count += 1
 
     # 着陆前的微调
     def landmark(self):
 
+        t = time.time()
         detect_num = 0
         alt = self.controller.get_alt()
         x = y = 0
-
         # 当当前模式等于目标模式的时候，进行循环
         while self.tar_mode == self.cur_mode and alt > 30 or abs(x) > 30 or abs(y) > 30:
+
+            new_time = time.time()
+            self.landmark_time += (new_time - t)
+            t = time.time()
 
             # 检测降落标志
             alt = self.get_alt_and_show(True)
@@ -154,7 +196,12 @@ class FnSet:
                 self.record(x, y, l_ag, f_ag, alt, None)
                 x = y = 100
                 if detect_num == 5:
+                    new_time = time.time()
+                    self.landmark_time += (new_time - t)
+                    self.landmark_count += 1
                     return "search"
+
+                self.landmark_count += 1
                 continue
 
             detect_num = 0
@@ -166,6 +213,9 @@ class FnSet:
             # 若在正上方，直接降落
             if alt < 65 and abs(x) <= 30 and abs(y) <= 30:
                 self.record(x, y, l_ag, f_ag, alt, "land")
+                new_time = time.time()
+                self.landmark_time += (new_time - t)
+                self.landmark_count += 1
                 return "land"
 
             # 否则进行微调
@@ -175,8 +225,16 @@ class FnSet:
 
             alt = self.controller.get_alt()
 
+            self.landmark_count += 1
+
         return "land"
 
     def land(self):
+        print("search_time：", self.search_time)
+        print("search_count：", self.search_count)
+        print("move2qr_time：", self.move2qr_time)
+        print("move2qr_count：", self.move2qr_count)
+        print("landmark_time：", self.landmark_time)
+        print("landmark_count：", self.landmark_count)
         self.controller.land()
         return "landed"
