@@ -5,6 +5,7 @@
 
 from cv_detector.detector import Detector
 import Ano_Controller
+import threading
 import time
 
 
@@ -42,15 +43,6 @@ class FnSet:
             return "search"
         else:
             return "None"
-
-    # 获得当前高度值，并显示在屏幕上
-    # def get_alt_and_show(self, counted=False):
-    #     alt = self.controller.get_alt()
-    #     if counted is False:
-    #         print("ALT: ", alt)
-    #     else:
-    #         print(self.count, "ALT: ", alt)
-    #     return alt
 
     # 记录无人机的动作命令
     def record(self, x, y, l_ag, f_ag, cur_alt, cmd):
@@ -91,7 +83,7 @@ class FnSet:
                 print("x_bias: ", x, " y_bias: ", y, " landmark_angle: ", l_ag, "forward_angle: ", f_ag)
                 self.controller.move(x, y, l_ag, f_ag, alt)
                 # 记录命令
-                self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
+                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, self.controller.record_info)).start()
 
                 new_time = time.time()
                 self.search_time += (new_time - t)
@@ -114,7 +106,7 @@ class FnSet:
                 # time.sleep(0.5)
 
             # 记录命令
-            self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
+            threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, self.controller.record_info)).start()
 
             self.search_count += 1
 
@@ -138,7 +130,7 @@ class FnSet:
             if x is None:
                 detect_num += 1
                 # 记录命令
-                self.record(x, y, l_ag, f_ag, alt, None)
+                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, None)).start()
                 if detect_num == 5:
 
                     new_time = time.time()
@@ -162,7 +154,7 @@ class FnSet:
                 self.controller.move(x, y, l_ag, f_ag, alt)
 
             # 记录命令
-            self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
+            threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, self.controller.record_info)).start()
 
             if self.cur_mode == "normal" and 0 < alt < self.controller.min_alt:
                 new_time = time.time()
@@ -193,7 +185,8 @@ class FnSet:
             # 若5次未检测到landmark，进入搜索阶段
             if x is None:
                 detect_num += 1
-                self.record(x, y, l_ag, f_ag, alt, None)
+                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, None)).start()
+
                 x = y = 100
                 if detect_num == 5:
                     new_time = time.time()
@@ -212,7 +205,7 @@ class FnSet:
 
             # 若在正上方，直接降落
             if alt < 65 and abs(x) <= 30 and abs(y) <= 30:
-                self.record(x, y, l_ag, f_ag, alt, "land")
+                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, "land")).start()
                 new_time = time.time()
                 self.landmark_time += (new_time - t)
                 self.landmark_count += 1
@@ -221,7 +214,7 @@ class FnSet:
             # 否则进行微调
             else:
                 self.controller.move_small(x, y, l_ag)
-                self.record(x, y, l_ag, f_ag, alt, self.controller.record_info)
+                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag, alt, self.controller.record_info)).start()
 
             alt = self.command.get_alt()
 
