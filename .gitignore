@@ -130,3 +130,5 @@ dmypy.json
 .idea/dictionaries
 .idea/inspectionProfiles
 
+.idea/encodings.xml
+.idea/modules.xml
