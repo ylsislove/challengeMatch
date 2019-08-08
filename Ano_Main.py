@@ -6,9 +6,11 @@
 
 from threading import Thread
 from socket import *
+import traceback
 import Ano_Mode
 import signal
 import time
+import sys
 
 
 class AnoDrone:
@@ -32,6 +34,9 @@ class AnoDrone:
                                  "left", "right", "turnL", "turnR", "surLand"]
         # 手动控制模式，缓冲列表
         self.control_buf_list = []
+
+        # 当前飞机状态
+        self.cur_stage = "takeoff"
 
     # --------------------------- 主线程，主循环函数 ---------------------------
 
@@ -71,6 +76,7 @@ class AnoDrone:
             elif self.tar_mode == "normal":
                 self.cur_mode = "normal"
                 self.mode.stage.fnset.cur_mode = "normal"
+                self.mode.stage.cur_stage = self.cur_stage
                 # 无人机进入normal模式，自动检测小车并降落
                 while self.tar_mode == self.cur_mode:
                     stage = self.mode.stage.cur_stage
@@ -78,11 +84,14 @@ class AnoDrone:
                         self.tar_mode = "landed"
                         self.mode.stage.fnset.tar_mode = "landed"
                         break
+                    if stage is None:
+                        stage = "search"
                     self.mode.stage.switch.get(stage)()
 
             elif self.tar_mode == "trace":
                 self.cur_mode = "trace"
                 self.mode.stage.fnset.cur_mode = "trace"
+                self.mode.stage.cur_stage = self.cur_stage
                 # 无人机进入trace模式，自动检测小车并追踪
                 while self.tar_mode == self.cur_mode:
                     stage = self.mode.stage.cur_stage
@@ -125,15 +134,15 @@ class AnoDrone:
             # 切换到追踪降落模式
             elif data == "normal":
                 # 检查当前无人机状态
-                self.mode.stage.check_stage()
-                if self.mode.stage.cur_stage == "None":
+                self.cur_stage = self.mode.stage.check_stage()
+                if self.cur_stage == "None":
                     data = "无人机状态异常，请检查后重试"
                 else:
-                    if self.mode.stage.cur_stage == "takeoff":
+                    if self.cur_stage == "takeoff":
                         self.mode.stage.fnset.tar_mode = "landed"
                         self.tar_mode = "landed"
                         self.cur_mode = "normal"
-                    elif self.mode.stage.cur_stage == "search":
+                    elif self.cur_stage == "search":
                         self.tar_mode = "normal"
                         self.mode.stage.fnset.tar_mode = "normal"
                     print("已切换到 ---------> 追踪降落模式 <---------")
@@ -141,15 +150,15 @@ class AnoDrone:
             # 切换到追踪模式
             elif data == "trace":
                 # 检查当前无人机状态
-                self.mode.stage.check_stage()
-                if self.mode.stage.cur_stage == "None":
+                self.cur_stage = self.mode.stage.check_stage()
+                if self.cur_stage == "None":
                     data = "无人机状态异常，请检查后重试"
                 else:
-                    if self.mode.stage.cur_stage == "takeoff":
+                    if self.cur_stage == "takeoff":
                         self.mode.stage.fnset.tar_mode = "landed"
                         self.tar_mode = "landed"
                         self.cur_mode = "trace"
-                    elif self.mode.stage.cur_stage == "search":
+                    elif self.cur_stage == "search":
                         self.tar_mode = "trace"
                         self.mode.stage.fnset.tar_mode = "trace"
                     print("已切换到 ---------> 追踪模式 <---------")
@@ -184,7 +193,15 @@ if __name__ == '__main__':
 
     try:
         anoDrone.main_process()
-    except Exception as e:
-        print(e.__traceback__)
+
+    except Exception as ex:
+        print(ex)
+        ex_type, ex_val, ex_stack = sys.exc_info()
+        for stack in traceback.extract_tb(ex_stack):
+            print(stack)
+        anoDrone.ano_sock.send("quit".encode("utf-8"))
         anoDrone.is_exit = True
+        anoDrone.mode.stage.fnset.tar_mode = "landed"
+        anoDrone.tar_mode = "landed"
+        anoDrone.mode.controller.land()
         anoDrone.ano_exit()

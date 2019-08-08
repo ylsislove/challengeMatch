@@ -26,7 +26,7 @@ class Stage:
     # 检查无人机当前状态
     def check_stage(self):
         print("=============== check stage ================")
-        self.cur_stage = self.fnset.check_stage()
+        return self.fnset.check_stage()
 
     # 起飞
     def takeoff(self):
