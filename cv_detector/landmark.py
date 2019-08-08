@@ -8,8 +8,7 @@ import numpy as np
 import math
 
 
-# image_center = (240, 320)
-image_center = (270, 480)
+image_center = (240, 424)
 
 
 def detect_landmark(_src):
@@ -132,8 +131,10 @@ def detect_landmark(_src):
 
 if __name__ == "__main__":
     # src = cv.imread("../picture/1563035940/origpic/468.jpg")
-    src = cv.imread("../picture/origpic/13.jpg")
-    res, x, y, l_ag, f_ag = detect_landmark(src, 0)
+    src = cv.imread("../picture/1563045840/origpic/1.jpg")
+    print(src.shape)
+    res, x, y, l_ag, f_ag = detect_landmark(src)
+    cv.namedWindow("result")
     cv.imshow("result", res)
 
     # import time
