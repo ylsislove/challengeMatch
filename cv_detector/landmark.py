@@ -8,7 +8,8 @@ import numpy as np
 import math
 
 
-image_center = (240, 320)
+# image_center = (240, 320)
+image_center = (270, 480)
 
 
 def detect_landmark(_src):
