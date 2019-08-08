@@ -111,7 +111,7 @@ class FnSet:
 
             # 未检测到landmark，且在最大高度范围内，转圈搜索
             else:
-                self.controller.turn(-30, "big")
+                self.controller.turn(-30)
 
             # 记录命令
             threading.Thread(target=self.record, args=(x, y, l_ag, f_ag,
