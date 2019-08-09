@@ -28,7 +28,7 @@ class Controller:
         self.height_half = 424
 
         # PID算法
-        self.Kp_move = 0.5
+        self.Kp_move = 0.6
         self.Kp_angle = 0.5
 
     def record(self, _cmd, _distance, _speed):
