@@ -14,20 +14,20 @@ import math
 image_center = (240, 320)
 
 
-def detect_qr(src):
+def detect_qr(_src):
     # 图像逆时针旋转90度
-    image = cv.flip(cv.transpose(src), 0)
+    _src = cv.flip(cv.transpose(_src), 0)
     # 转换为灰度的色彩空间
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(_src, cv.COLOR_BGR2GRAY)
     # 得到二值图像
     _, binary = cv.threshold(gray, 80, 255, cv.THRESH_OTSU + cv.THRESH_BINARY_INV)
     # 得到二进制轮廓，建立轮廓的层级关系，仅保存轮廓的拐点信息
     contours, hierarchy = cv.findContours(binary, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     # 第三个参数表示要绘制轮廓的编号，若为-1，则绘制所有轮廓
-    # cv.drawContours(image, contours, -1, (255, 0, 0), 1)
-    # cv.imshow('contours', image)
+    # cv.drawContours(_src, contours, -1, (255, 0, 0), 1)
+    # cv.imshow('contours', _src)
     if hierarchy is None or len(hierarchy) <= 0:
-        return image, None, None, None, None
+        return _src, None, None, None, None
 
     # 识别二维码中的回形定位符
     hierarchy = hierarchy[0]
@@ -53,31 +53,21 @@ def detect_qr(src):
         qr_size = tuple(np.int0(rect[1]))
         # print(rect)
         # 绘制二维码中心点和图像中心点
-        cv.circle(image, qr_center, 2, (255, 255, 255), 2)
-        cv.circle(image, image_center, 2, (255, 255, 255), 2)
-        cv.line(image, image_center, qr_center, (255, 0, 0), 2)
+        cv.circle(_src, qr_center, 2, (255, 255, 255), 2)
+        cv.circle(_src, image_center, 2, (255, 255, 255), 2)
+        cv.line(_src, image_center, qr_center, (255, 0, 0), 2)
         # 得到外接矩形的四个顶点坐标并向下取整
         box = np.int0(cv.boxPoints(rect))
         # 绘制二维码轮廓
-        cv.drawContours(image, [box], -1, (0, 255, 0), 2)
-        # # 绘制三个回形定位符的中心点
-        # x1, y1, w1, h1 = cv.boundingRect(contours[found[0]])
-        # x2, y2, w2, h2 = cv.boundingRect(contours[found[1]])
-        # x3, y3, w3, h3 = cv.boundingRect(contours[found[2]])
-        # a = (int(x1 + w1 / 2), int(y1 + h1 / 2))
-        # b = (int(x2 + w2 / 2), int(y2 + h2 / 2))
-        # c = (int(x3 + w3 / 2), int(y3 + h3 / 2))
-        # cv.circle(image, a, 2, (0, 0, 255), 2)
-        # cv.circle(image, b, 2, (0, 0, 255), 2)
-        # cv.circle(image, c, 2, (0, 0, 255), 2)
+        cv.drawContours(_src, [box], -1, (0, 255, 0), 2)
 
         # 简单的判断方法，如果二维码的轮廓的长和宽相差较大，判为检测二维码失败，返回标记后的图像
         if abs(qr_size[0] - qr_size[1]) > 20:
-            return image, None, None, None, None
+            return _src, None, None, None, None
 
         # 二维码中心减图像中心，得到x偏差和y偏差
-        x_bias = qr_center[0] - image_center[0]
-        y_bias = qr_center[1] - image_center[1]
+        x_bias = int(qr_center[0] - image_center[0])
+        y_bias = int(qr_center[1] - image_center[1])
         # print(x_bias)
         # print(y_bias)
 
@@ -90,7 +80,7 @@ def detect_qr(src):
         x_abs = abs(x_bias)
         y_abs = abs(y_bias)
         if x_bias == 0 or y_bias == 0:
-            return image, x_bias, y_bias, qr_angle, 0
+            return _src, x_bias, y_bias, qr_angle, 0
 
         forward_angle = round(math.atan(x_abs / y_abs) / math.pi * 180)
         # 第一象限
@@ -106,29 +96,29 @@ def detect_qr(src):
         else:
             forward_angle = 180 - forward_angle
 
-        return image, x_bias, y_bias, qr_angle, forward_angle
+        return _src, x_bias, y_bias, qr_angle, forward_angle
     else:
-        return image, None, None, None, None
+        return _src, None, None, None, None
 
 
-def detect_small_qr(src):
+def detect_small_qr(_src):
     # 深拷贝一份图像
-    copy_src = np.copy(src)
+    copy_src = np.copy(_src)
     # 尝试检测完整的二维码
     img, x_bias, y_bias, qr_angle, forward_angle = detect_qr(copy_src)
     if x_bias is not None:
         return img, x_bias, y_bias, qr_angle
 
     # 检测不到完整的二维码，则检测一个回形区域
-    image = cv.flip(cv.transpose(src), 0)
+    _src = cv.flip(cv.transpose(_src), 0)
     # 转换为灰度的色彩空间
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(_src, cv.COLOR_BGR2GRAY)
     # 得到二值图像
     _, binary = cv.threshold(gray, 80, 255, cv.THRESH_OTSU + cv.THRESH_BINARY_INV)
     # 得到二进制轮廓，建立轮廓的层级关系，仅保存轮廓的拐点信息
     contours, hierarchy = cv.findContours(binary, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     if hierarchy is None or len(hierarchy) <= 0:
-        return image, None, None, None
+        return _src, None, None, None
 
     # 识别二维码中的回形定位符
     hierarchy = hierarchy[0]
@@ -148,34 +138,34 @@ def detect_small_qr(src):
         for i in found:
             x1, y1, w1, h1 = cv.boundingRect(contours[i])
             c = (int(x1 + w1 / 2), int(y1 + h1 / 2))
-            cv.circle(image, c, 2, (0, 0, 255), 2)
+            cv.circle(_src, c, 2, (0, 0, 255), 2)
             d = math.pow((c[0] - image_center[0]), 2) + math.pow((c[1] - image_center[1]), 2)
             if d < distance:
                 distance = d
                 qr_center = c
-        cv.circle(image, image_center, 2, (255, 255, 255), 2)
-        cv.line(image, image_center, qr_center, (255, 0, 0), 2)
+        cv.circle(_src, image_center, 2, (255, 255, 255), 2)
+        cv.line(_src, image_center, qr_center, (255, 0, 0), 2)
         # print(qr_center)
 
         x_bias = qr_center[0] - image_center[0]
         y_bias = qr_center[1] - image_center[1]
         # print(x_bias, y_bias)
-        return image, x_bias, y_bias, 0
+        return _src, x_bias, y_bias, 0
 
     else:
-        return image, None, None, None
+        return _src, None, None, None
 
 
-def test(src):
-    image = cv.flip(cv.transpose(src), 0)
+def test(_src):
+    _src = cv.flip(cv.transpose(_src), 0)
     # 转换为灰度的色彩空间
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(_src, cv.COLOR_BGR2GRAY)
     # 得到二值图像
     _, binary = cv.threshold(gray, 80, 255, cv.THRESH_OTSU + cv.THRESH_BINARY_INV)
     # 得到二进制轮廓，建立轮廓的层级关系，仅保存轮廓的拐点信息
     contours, hierarchy = cv.findContours(binary, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     if hierarchy is None or len(hierarchy) <= 0:
-        return image, None
+        return _src, None
 
     # 识别二维码中的回形定位符
     hierarchy = hierarchy[0]
@@ -198,15 +188,15 @@ def test(src):
         # 得到外接矩形的四个顶点坐标并向下取整
         box = np.int0(cv.boxPoints(rect))
         # 绘制二维码轮廓
-        cv.drawContours(image, [box], -1, (0, 255, 0), 2)
+        cv.drawContours(_src, [box], -1, (0, 255, 0), 2)
         # 计算二维码偏角
         angle = round(rect[2])
         if angle < -45:
             angle = 90 + angle
 
-        return image, angle
+        return _src, angle
     else:
-        return image, None
+        return _src, None
 
 
 if __name__ == "__main__":
@@ -215,9 +205,9 @@ if __name__ == "__main__":
     # res, alpha = test(src)
     # cv.imshow("result", res)
     # print(alpha)
-    image, x_bias, y_bias, qr_angle, forward_angle = detect_qr(src)
-    print(x_bias)
-    cv.imshow("result", image)
+    res, x, y, q_angle, f_angle = detect_qr(src)
+    print(x)
+    cv.imshow("result", res)
 
     cv.waitKey()
     cv.destroyAllWindows()
