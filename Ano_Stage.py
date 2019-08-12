@@ -15,41 +15,29 @@ class Stage:
 
         self.switch = {
             "takeoff": self.takeoff,    # 起飞
-            "search": self.search,      # 搜索二维码
-            "move2qr": self.move2qr,    # 追踪二维码
-            "landmark": self.landmark,  # H标识
-            "land": self.land,      # 降落
+            "search": self.search,      # 搜索
+            "move": self.move,          # 追踪
+            "land": self.land,          # 降落
         }
 
     ##############################################################################
-
-    # 检查无人机当前状态
-    def check_stage(self):
-        print("=============== check stage ================")
-        return self.fnset.check_stage()
 
     # 起飞
     def takeoff(self):
         print("=============== takeoff ================")
         self.cur_stage = self.fnset.takeoff()
 
-    # 搜索二维码
+    # 搜索小车
     def search(self):
-        print("=============== search qr ===============")
+        print("=============== search ===============")
         self.cur_stage = self.fnset.search()
 
     # 追踪小车
-    def move2qr(self):
-        print("=============== move to qr ===============")
-        self.cur_stage = self.fnset.move2qr()
-
-    # 降落点悬停
-    def landmark(self):
-        print("=============== landmark ===============")
-        self.cur_stage = self.fnset.landmark()
+    def move(self):
+        print("=============== move ===============")
+        self.cur_stage = self.fnset.move()
 
     # 降落
     def land(self):
         print("=============== land ===============")
         self.cur_stage = self.fnset.land()
-

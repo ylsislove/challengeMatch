@@ -68,18 +68,14 @@ class Detector:
             for key, value in self.log_dict.items():
                 count = 1
                 src = cv.imread("%s/%d.jpg" % (self.propath, key))
-                cv.putText(src, "alt: %d | mode: %s" %
-                           (value[1][0], value[1][1]),
-                           (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
                 if value[0][0] is not None:
-                    count += 1
                     cv.putText(src, "x: %d | y: %d | land_ag: %d | for_ag: %d" %
                                (value[0][0], value[0][1], value[0][2], value[0][3]),
                                (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-                if value[2][0] is not None:
                     count += 1
-                    cv.putText(src, value[2][0],
-                               (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                cv.putText(src, "alt: %d | cmd: %s" %
+                           (value[1][0], value[1][1]),
+                           (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
                 cv.imwrite("%s/%d.jpg" % (self.propath, key), src)
 

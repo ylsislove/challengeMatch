@@ -4,8 +4,8 @@
 #
 
 import Ano_Command
-# import time
-# import math
+import threading
+import time
 
 
 class Controller:
@@ -31,16 +31,32 @@ class Controller:
         self.Kp_move = 0.55
         self.Kp_angle = 0.5
 
+        # 无人机已跟踪的时间
+        self.trace_time = 0
+        # 是否记录跟踪时间
+        self.is_trace = False
+
+        # 开启时间子线程
+        t = threading.Thread(target=self.recode_time, args=())
+        t.setDaemon(True)
+        t.start()
+
+    # 记录无人机已追踪的时间
+    def recode_time(self):
+        while True:
+            cur_time = time.time()
+            while self.is_trace:
+                pass
+            delta_time = (time.time() - cur_time)
+            if delta_time > 0.01:
+                self.trace_time += delta_time
+
     def record(self, _cmd, _distance, _speed):
         self.record_info = "%s, distance: %d, speed: %d" % (_cmd, _distance, _speed)
         print(self.record_info)
 
     # 微调最后的位置
     def move_small(self, x_bias, y_bias, angle_bias, alt):
-
-        # 像素距离转化为实际距离
-        x_bias = round(alt / self.height_half * x_bias)
-        y_bias = round(alt / self.height_half * y_bias) - 4
 
         # 微调landmark_angle
         if 5 < angle_bias:
@@ -58,27 +74,31 @@ class Controller:
         else:
             self.move_down(20)
 
-        return x_bias, y_bias
-
     def move(self, x_bias, y_bias, l_angle_bias, f_angle_bias, alt):
 
         # 像素距离转化为实际距离
         x_bias = round(alt / self.height_half * x_bias)
-        y_bias = round(alt / self.height_half * y_bias)
+        y_bias = round(alt / self.height_half * y_bias) - 20
 
         if abs(x_bias) < 40 and abs(y_bias) < 40:
 
-            if 15 < abs(x_bias):
+            if 20 < abs(x_bias):
                 self.move_for_x(x_bias)
 
-            elif 15 < abs(y_bias):
+            elif 20 < abs(y_bias):
                 self.move_for_y(y_bias)
 
-            elif 8 < abs(l_angle_bias):
+            elif 10 < abs(l_angle_bias):
                 self.turn(l_angle_bias)
 
-            else:
+            elif self.trace_time >= 30:
                 self.move_down(20)
+
+            elif alt > self.min_alt:
+                self.move_down(20)
+
+            else:
+                self.move_up(10)
 
         else:
             if 20 < abs(f_angle_bias):
