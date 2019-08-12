@@ -4,6 +4,7 @@
 # 用于检测和检测后的图片每50张存一次硬盘
 #
 
+from cv_detector.landmark_h import detect_h
 from cv_detector.landmark import detect_landmark
 from cv_detector.redcross import detect_redcross
 from cv_detector.road import detect_road
@@ -127,6 +128,13 @@ class Detector:
         self.frame = self.cvRead.read()
         self.img, x, y, l_ag, f_ag = detect_landmark(self.frame)
         return x, y, l_ag, f_ag
+
+    # 检测H
+    def detect_h(self):
+        self.save_all()
+        self.frame = self.cvRead.read()
+        self.img, x, y, h_ag = detect_h(self.frame)
+        return x, y, h_ag
 
     # 保存内存中的图片
     def save_pic(self, prolist, origlist):

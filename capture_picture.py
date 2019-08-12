@@ -17,13 +17,14 @@ class Test:
     def test(self):
         time.sleep(1)
         while self.count < 101:
-            alt = self.controller.get_alt()
+            alt = self.command.get_alt()
             print(self.count, "ALT: ", alt)
             self.count += 1
-            self.detector.detect_landmark()
+            self.detector.detect_h()
             time.sleep(0.1)
         self.detector.save_all(True)
         self.detector.cvRead.close_down_cam()
+        self.command.close_receiver()
         print('我被成功退出啦~')
         sys.exit(0)
 
