@@ -177,6 +177,7 @@ class AnoDrone:
         self.ano_sock.close()
         self.mode.stage.fnset.detector.save_all(True)
         self.mode.stage.fnset.detector.cvRead.close_down_cam()
+        self.mode.stage.fnset.command.close_receiver()
         print('我被成功退出啦~')
 
     # 将保存在内存中的图片和log保存到硬盘中

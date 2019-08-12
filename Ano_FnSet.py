@@ -60,16 +60,17 @@ class FnSet:
         self.cur_alt = self.command.get_alt()
         tar_alt = 150
         while self.tar_mode == self.cur_mode and self.cur_alt < tar_alt:
-            self.controller.move_up()
+            self.controller.move_up(tar_alt - self.cur_alt)
             self.cur_alt = self.command.get_alt()
             print("alt:", self.cur_alt)
+        self.controller.hover()
         return "search"
     
     def search(self):
 
         self.cur_alt = self.command.get_alt()
         while self.tar_mode == self.cur_mode and self.cur_alt < self.controller.min_alt:
-            self.controller.move_up()
+            self.controller.move_up(self.controller.min_alt - self.cur_alt)
             self.cur_alt = self.command.get_alt()
 
         t = time.time()
@@ -85,6 +86,7 @@ class FnSet:
             self.cur_alt = self.command.get_alt()
             print("alt:", self.cur_alt)
             x, y, l_ag, f_ag = self.detector.detect_landmark()
+            # x, y, l_ag, f_ag = self.detector.detect_qr()
 
             # 检测到landmark，进入追踪小车阶段
             if x is not None:
@@ -102,12 +104,12 @@ class FnSet:
 
             # 未检测到landmark，且未达到最大高度，控制飞机升高
             elif (self.cur_alt + 10) <= self.controller.max_alt:
-                self.controller.move_up()
+                self.controller.move_up(10)
 
             # 未检测到landmark，超过最大高度10cm，控制飞机下降
             elif self.cur_alt >= self.controller.max_alt + 10:
                 print("Warning! Warning! Warning!")
-                self.controller.move_down()
+                self.controller.move_down(20)
 
             # 未检测到landmark，且在最大高度范围内，转圈搜索
             else:
@@ -135,6 +137,7 @@ class FnSet:
             self.cur_alt = self.command.get_alt()
             print("alt:", self.cur_alt)
             x, y, l_ag, f_ag = self.detector.detect_landmark()
+            # x, y, l_ag, f_ag = self.detector.detect_qr()
 
             # 若5次未检测到landmark，进入搜索阶段
             if x is None:
@@ -182,7 +185,7 @@ class FnSet:
         self.cur_alt = self.command.get_alt()
         x = y = 0
         # 当当前模式等于目标模式的时候，进行循环
-        while self.tar_mode == self.cur_mode and (self.cur_alt > 30 or abs(x) > 30 or abs(y) > 30):
+        while self.tar_mode == self.cur_mode and (self.cur_alt > 30 or abs(x) > 8 or abs(y) > 8):
 
             new_time = time.time()
             self.landmark_time += (new_time - t)
@@ -192,6 +195,7 @@ class FnSet:
             self.cur_alt = self.command.get_alt()
             print("alt:", self.cur_alt)
             x, y, l_ag, f_ag = self.detector.detect_landmark()
+            # x, y, l_ag, f_ag = self.detector.detect_qr()
 
             # 若5次未检测到landmark，进入搜索阶段
             if x is None:
@@ -210,21 +214,20 @@ class FnSet:
                 self.landmark_count += 1
                 continue
 
-            detect_num = 0
-
             # 若在正上方，直接降落
-            if self.cur_alt < 65 and abs(x) <= 30 and abs(y) <= 30:
-                threading.Thread(target=self.record, args=(x, y, l_ag, f_ag,
-                                                           self.cur_alt, self.cur_mode,
-                                                           "land")).start()
-                new_time = time.time()
-                self.landmark_time += (new_time - t)
-                self.landmark_count += 1
-                return "land"
+            # if self.cur_alt < 65 and abs(x) <= 30 and abs(y) <= 30:
+            #     threading.Thread(target=self.record, args=(x, y, l_ag, f_ag,
+            #                                                self.cur_alt, self.cur_mode,
+            #                                                "land")).start()
+            #     new_time = time.time()
+            #     self.landmark_time += (new_time - t)
+            #     self.landmark_count += 1
+            #     return "land"
 
             # 否则进行微调
             else:
-                self.controller.move_small(x, y, l_ag, self.cur_alt)
+                detect_num = 0
+                x, y = self.controller.move_small(x, y, l_ag, self.cur_alt)
                 threading.Thread(target=self.record, args=(x, y, l_ag, f_ag,
                                                            self.cur_alt, self.cur_mode,
                                                            self.controller.record_info)).start()

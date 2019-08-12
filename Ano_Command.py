@@ -6,6 +6,7 @@
 import Ano_Transmit
 import Ano_Receiver
 import binascii
+import time
 
 
 class Command:
@@ -13,6 +14,7 @@ class Command:
     def __init__(self):
         self.sender = Ano_Transmit.Sender()
         self.receiver = Ano_Receiver.Receiver()
+        self.receiver.start()
 
     def takeoff(self):
         self.sender.cmd_convert("takeoff", 0, 0)
@@ -42,12 +44,18 @@ class Command:
         self.sender.hover()
 
     def get_alt(self):
-        self.receiver.clear()
-        self.receiver.receive()
-        return self.receiver.ALT_ADDITION
+        return self.receiver.receive()
+
+    def close_receiver(self):
+        self.receiver.close_receiver()
 
 
 if __name__ == "__main__":
     test = Command()
-    while True:
-        print(test.get_alt())
+    count = 0
+    try:
+        while True:
+            print(test.get_alt())
+            count += 1
+    except KeyboardInterrupt:
+        test.close_receiver()

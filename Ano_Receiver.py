@@ -4,11 +4,12 @@
 #
 
 import Ano_Base
+import threading
 import binascii
 import re
 
 
-class Receiver:
+class Receiver(threading.Thread):
 
     def __init__(self):
 
@@ -69,54 +70,46 @@ class Receiver:
         self.ALT_ADDITION = 0   # 附加测高传感器，精确到0.01
         self.SEN_TMP = 0    # 传感器温度，精确到0.01
 
-        self.pattern = re.compile("(.*?aa05af(.*?))aa05af", re.IGNORECASE)
+        # 线程是否关闭
+        self.is_close = False
+
+        self.pattern = re.compile("(.*?aa05af070a(.*?))aa05af", re.IGNORECASE)
 
     # 清空缓冲区
     def clear(self):
         self.base.port.flushInput()
 
-    # 接收
-    def receive(self):
-        data = ''
-        while True:
+    # 关闭该子线程
+    def close_receiver(self):
+        self.is_close = True
+
+    def run(self):
+        print("Receiver已启动")
+        self.clear()
+        while not self.is_close:
             if self.base.port.inWaiting() > 0:
                 # 十六进制转换binascii.b2a_hex()
-                data_str = binascii.b2a_hex(self.base.port.read(1)).decode('utf-8')
-                data += data_str
-                match = self.pattern.search(data)
-                if match is not None:
-                    ret = self.get_info(match.group(2))
-                    if ret:
-                        break
-                    data = data[len(match.group(1)):]
+                data_str = binascii.b2a_hex(self.base.port.read(200)).decode('utf-8')
+                # 是否有高度信息
+                if self.pattern.search(data_str) is not None:
+                    match = self.pattern.search(data_str)
+                    data = match.group(2)
+                    try:
+                        alt = int(data[8:16], 16)
+                        if 0 < alt < 500:
+                            self.ALT_ADDITION = alt
+                    except ValueError:
+                        print("接收出错")
+                    self.clear()
 
-    # 解析数据
-    def get_info(self, data):
-        try:
-            # 解析姿态等信息
-            if data.startswith(self.posture_fun_len):
-                self.parse_postrue_info(data)
-            # 解析传感器
-            elif data.startswith(self.sensor_fun_len):
-                self.parse_sensor_info(data)
-            # 解析控制数据信息
-            elif data.startswith(self.control_fun_len):
-                self.parse_control_info(data)
-            # 解析板载气压计高度、附加测高传感器、传感器温度
-            elif data.startswith(self.alt_addition_fun_len):
-                self.parse_alt_addition_info(data)
-                # 这传输数据的过程中可能会出现异常，所以我们要把异常排除掉
-                if self.ALT_ADDITION > 300 or self.ALT_ADDITION == 0:
-                    return False
-                return True
-            return False
-        except ValueError:
-            return False
+    # 接收
+    def receive(self):
+        return self.ALT_ADDITION
 
     # 解析姿态等信息
-    def parse_postrue_info(self, data):
+    def parse_posture_info(self, data):
         data = data[len(self.posture_fun_len):]
-        #print('postrue_info: '+data)
+        # print('posture_info: '+data)
         self.ROL = int(data[:4], 16) / 100
         self.PIT = int(data[4:8], 16) / 100
         self.YAW = int(data[8:12], 16) / 100
@@ -127,7 +120,7 @@ class Receiver:
     # 解析传感器
     def parse_sensor_info(self, data):
         data = data[len(self.sensor_fun_len):]
-        #print('sensor_info:' + data)
+        # print('sensor_info:' + data)
         self.ACC_X = int(data[:4], 16)
         self.ACC_Y = int(data[4:8], 16)
         self.ACC_Z = int(data[8:12], 16)
@@ -141,7 +134,7 @@ class Receiver:
     # 解析控制数据信息
     def parse_control_info(self, data):
         data = data[len(self.control_fun_len):]
-        #print('control_info:' + data)
+        # print('control_info:' + data)
         self.ctrl_THR = int(data[:4], 16)
         self.ctrl_YAW = int(data[4:8], 16)
         self.ctrl_ROL = int(data[8:12], 16)
@@ -156,7 +149,7 @@ class Receiver:
     # 解析板载气压计高度、附加测高传感器、传感器温度
     def parse_alt_addition_info(self, data):
         data = data[len(self.alt_addition_fun_len):]
-        #print('alt_addition_info:' + data)
+        # print('alt_addition_info:' + data)
         self.ALT_BAR = int(data[:8], 16)
         self.ALT_ADDITION = int(data[8:16], 16)
-        self.ALT_BAR = int(data[16:20], 16)
+        self.SEN_TMP = int(data[16:20], 16)
