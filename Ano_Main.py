@@ -22,6 +22,8 @@ class AnoDrone:
         while self.port.isOpen():
             # 获取改变后的状态
             stage = self.stage.cur_stage
+            if stage == "landed":
+                break
             # 根据当前状态，调用对应函数（仿照switch）
             self.stage.switch.get(stage)()
 
@@ -30,8 +32,8 @@ class AnoDrone:
     def ano_exit(self):
         self.stage.fnset.detector.save_all(True)
         self.stage.fnset.detector.cvRead.close_down_cam()
-        self.stage.fnset.command.close_receiver()
         print('我被成功退出啦~')
+        exit(0)
 
     # 将保存在内存中的图片和log保存到硬盘中
     def signal_handler(self, signum, frame):

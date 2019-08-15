@@ -28,13 +28,15 @@ class Controller:
         self.height_half = 424
 
         # PID算法
-        self.Kp_move = 0.55
-        self.Kp_angle = 0.5
+        self.Kp_move = 0.4
+        self.Kp_angle = 0.4
 
         # 无人机已跟踪的时间
         self.trace_time = 0
         # 是否记录跟踪时间
         self.is_trace = False
+        # 规定的跟踪时间
+        self.normal_trace_time = 10
 
         # 开启时间子线程
         t = threading.Thread(target=self.recode_time, args=())
@@ -55,54 +57,32 @@ class Controller:
         self.record_info = "%s, distance: %d, speed: %d" % (_cmd, _distance, _speed)
         print(self.record_info)
 
-    # 微调最后的位置
-    def move_small(self, x_bias, y_bias, angle_bias, alt):
-
-        # 微调landmark_angle
-        if 5 < angle_bias:
-            self.turn(angle_bias)
-
-        # 微调x偏差
-        elif 10 < abs(x_bias):
-            self.move_for_x(x_bias)
-
-        # 微调y偏差
-        elif 10 < abs(y_bias):
-            self.move_for_y(y_bias)
-
-        # 尽量降低飞机飞行高度
-        else:
-            self.move_down(20)
-
-    def move(self, x_bias, y_bias, l_angle_bias, f_angle_bias, alt):
+    def move(self, x_bias, y_bias, f_angle, alt):
 
         # 像素距离转化为实际距离
         x_bias = round(alt / self.height_half * x_bias)
-        y_bias = round(alt / self.height_half * y_bias) - 20
+        y_bias = round(alt / self.height_half * y_bias) - 10
 
         if abs(x_bias) < 40 and abs(y_bias) < 40:
 
-            if 20 < abs(x_bias):
-                self.move_for_x(x_bias)
-
-            elif 20 < abs(y_bias):
-                self.move_for_y(y_bias)
-
-            elif 10 < abs(l_angle_bias):
-                self.turn(l_angle_bias)
-
-            elif self.trace_time >= 30:
-                self.move_down(20)
-
-            elif alt > self.min_alt:
+            if self.trace_time >= self.normal_trace_time:
+                print("降落")
                 self.move_down(20)
 
             else:
-                self.move_up(10)
+                self.hover()
+
+        elif abs(x_bias) < 80 and abs(y_bias) < 80:
+
+            if abs(x_bias) >= 40:
+                self.move_for_x(x_bias)
+
+            else:
+                self.move_for_y(y_bias)
 
         else:
-            if 20 < abs(f_angle_bias):
-                self.turn(f_angle_bias)
+            if abs(f_angle) >= 15:
+                self.turn(f_angle)
 
             else:
                 self.move_for_y(y_bias)
@@ -189,29 +169,3 @@ class Controller:
     def land(self):
         self.command.land()
         self.record("land", 0, 0)
-
-    # ------------------------ 追踪小车的主要控制函数 ------------------------
-
-    def trace_car(self, x_bias, y_bias, l_angle_bias, f_angle_bias, alt):
-
-        # 像素距离转化为实际距离
-        x_bias = round(alt / self.height_half * x_bias)
-        y_bias = round(alt / self.height_half * y_bias)
-
-        if abs(x_bias) < 40 and abs(y_bias) < 40:
-
-            if 15 < abs(x_bias):
-                self.move_for_x(x_bias)
-
-            elif 15 < abs(y_bias):
-                self.move_for_y(y_bias)
-
-            else:
-                self.turn(l_angle_bias)
-
-        else:
-            if 15 <= abs(f_angle_bias):
-                self.turn(f_angle_bias)
-
-            else:
-                self.move_for_y(y_bias)

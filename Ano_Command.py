@@ -14,7 +14,6 @@ class Command:
     def __init__(self):
         self.sender = Ano_Transmit.Sender()
         self.receiver = Ano_Receiver.Receiver()
-        self.receiver.start()
 
     def takeoff(self):
         self.sender.cmd_convert("takeoff", 0, 0)
@@ -46,16 +45,13 @@ class Command:
     def get_alt(self):
         return self.receiver.receive()
 
-    def close_receiver(self):
-        self.receiver.close_receiver()
-
 
 if __name__ == "__main__":
     test = Command()
-    count = 0
     try:
         while True:
+            t = time.time()
             print(test.get_alt())
-            count += 1
+            print(time.time() - t)
     except KeyboardInterrupt:
-        test.close_receiver()
+        exit(0)

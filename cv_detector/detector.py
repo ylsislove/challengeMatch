@@ -4,7 +4,8 @@
 # 用于检测和检测后的图片每50张存一次硬盘
 #
 
-from cv_detector.landmark_h import detect_h
+from cv_detector.landmark_h_for import detect_h
+# from cv_detector.landmark_h import detect_h
 from cv_detector.landmark import detect_landmark
 from cv_detector.redcross import detect_redcross
 from cv_detector.road import detect_road
@@ -69,13 +70,13 @@ class Detector:
                 count = 1
                 src = cv.imread("%s/%d.jpg" % (self.propath, key))
                 if value[0][0] is not None:
-                    cv.putText(src, "x: %d | y: %d | land_ag: %d | for_ag: %d" %
-                               (value[0][0], value[0][1], value[0][2], value[0][3]),
-                               (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                    cv.putText(src, "x: %d | y: %d | f_ag: %d" %
+                               (value[0][0], value[0][1], value[0][2]),
+                               (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
                     count += 1
                 cv.putText(src, "alt: %d | cmd: %s" %
                            (value[1][0], value[1][1]),
-                           (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                           (10, 30 * count), cv.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
 
                 cv.imwrite("%s/%d.jpg" % (self.propath, key), src)
 
@@ -129,8 +130,8 @@ class Detector:
     def detect_h(self):
         self.save_all()
         self.frame = self.cvRead.read()
-        self.img, x, y, h_ag = detect_h(self.frame)
-        return x, y, h_ag
+        self.img, x, y, f_angle = detect_h(self.frame)
+        return x, y, f_angle
 
     # 保存内存中的图片
     def save_pic(self, prolist, origlist):

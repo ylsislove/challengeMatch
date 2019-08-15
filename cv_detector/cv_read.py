@@ -15,8 +15,8 @@ class CVRead(threading.Thread):
     # 打开下置摄像头
     def open_down_cam(self):
         self.capture_down = cv.VideoCapture(self.capture_serial)
-        self.capture_down.set(cv.CAP_PROP_FRAME_WIDTH, 848)
-        self.capture_down.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
+        self.capture_down.set(cv.CAP_PROP_FRAME_WIDTH, 640)
+        self.capture_down.set(cv.CAP_PROP_FRAME_HEIGHT, 360)
         _, _ = self.capture_down.read()
 
     # 关闭下置摄像头

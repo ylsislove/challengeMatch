@@ -4,12 +4,11 @@
 #
 
 import Ano_Base
-import threading
 import binascii
 import re
 
 
-class Receiver(threading.Thread):
+class Receiver:
 
     def __init__(self):
 
@@ -70,23 +69,16 @@ class Receiver(threading.Thread):
         self.ALT_ADDITION = 0   # 附加测高传感器，精确到0.01
         self.SEN_TMP = 0    # 传感器温度，精确到0.01
 
-        # 线程是否关闭
-        self.is_close = False
-
         self.pattern = re.compile("(.*?aa05af070a(.*?))aa05af", re.IGNORECASE)
 
     # 清空缓冲区
     def clear(self):
         self.base.port.flushInput()
 
-    # 关闭该子线程
-    def close_receiver(self):
-        self.is_close = True
-
-    def run(self):
-        print("Receiver已启动")
+    # 接收
+    def receive(self):
         self.clear()
-        while not self.is_close:
+        while True:
             if self.base.port.inWaiting() > 0:
                 # 十六进制转换binascii.b2a_hex()
                 data_str = binascii.b2a_hex(self.base.port.read(200)).decode('utf-8')
@@ -97,14 +89,9 @@ class Receiver(threading.Thread):
                     try:
                         alt = int(data[8:16], 16)
                         if 0 < alt < 500:
-                            self.ALT_ADDITION = alt
+                            return alt
                     except ValueError:
-                        print("接收出错")
-                    self.clear()
-
-    # 接收
-    def receive(self):
-        return self.ALT_ADDITION
+                        pass
 
     # 解析姿态等信息
     def parse_posture_info(self, data):
