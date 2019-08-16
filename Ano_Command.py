@@ -43,7 +43,9 @@ class Command:
         self.sender.hover()
 
     def get_alt(self):
-        return self.receiver.receive()
+        self.receiver.clear()
+        self.receiver.receive()
+        return self.receiver.ALT_ADDITION
 
 
 if __name__ == "__main__":

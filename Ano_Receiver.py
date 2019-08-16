@@ -89,7 +89,8 @@ class Receiver:
                     try:
                         alt = int(data[8:16], 16)
                         if 0 < alt < 500:
-                            return alt
+                            self.ALT_ADDITION = alt
+                            break
                     except ValueError:
                         pass
 

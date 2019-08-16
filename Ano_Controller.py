@@ -25,18 +25,19 @@ class Controller:
         # 像素距离与实际距离转换的比例
         # self.proportion = math.tan(45 * math.pi / 180)
         # 分辨率长边的一半
-        self.height_half = 424
+        # self.height_half = 424
+        self.height_half = 320
 
         # PID算法
-        self.Kp_move = 0.4
-        self.Kp_angle = 0.4
+        self.Kp_move = 0.55
+        self.Kp_angle = 0.5
 
         # 无人机已跟踪的时间
         self.trace_time = 0
         # 是否记录跟踪时间
         self.is_trace = False
         # 规定的跟踪时间
-        self.normal_trace_time = 10
+        self.normal_trace_time = 30
 
         # 开启时间子线程
         t = threading.Thread(target=self.recode_time, args=())
@@ -48,10 +49,11 @@ class Controller:
         while True:
             cur_time = time.time()
             while self.is_trace:
-                pass
+                continue
             delta_time = (time.time() - cur_time)
             if delta_time > 0.01:
                 self.trace_time += delta_time
+            # print("trace_time:", self.trace_time)
 
     def record(self, _cmd, _distance, _speed):
         self.record_info = "%s, distance: %d, speed: %d" % (_cmd, _distance, _speed)
@@ -67,14 +69,14 @@ class Controller:
 
             if self.trace_time >= self.normal_trace_time:
                 print("降落")
-                self.move_down(20)
+                self.move_down(40)
 
             else:
                 self.hover()
 
-        elif abs(x_bias) < 80 and abs(y_bias) < 80:
+        elif abs(x_bias) <= 60 and abs(y_bias) <= 60:
 
-            if abs(x_bias) >= 40:
+            if abs(x_bias) >= 30:
                 self.move_for_x(x_bias)
 
             else:

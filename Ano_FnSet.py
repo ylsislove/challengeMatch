@@ -35,7 +35,7 @@ class FnSet:
     def takeoff(self):
         self.controller.takeoff()
         self.cur_alt = self.command.get_alt()
-        tar_alt = 150
+        tar_alt = 200
         while self.cur_alt < tar_alt:
             self.controller.move_up(tar_alt - self.cur_alt)
             self.cur_alt = self.command.get_alt()
@@ -66,7 +66,7 @@ class FnSet:
 
             # 未检测到landmark，且未达到最大高度，控制飞机升高
             elif (self.cur_alt + 10) <= self.controller.max_alt:
-                self.controller.move_up(10)
+                self.controller.move_up(20)
 
             # 未检测到landmark，超过最大高度10cm，控制飞机下降
             elif self.cur_alt >= self.controller.max_alt + 10:
@@ -74,7 +74,7 @@ class FnSet:
 
             # 未检测到landmark，且在最大高度范围内，转圈搜索
             else:
-                self.controller.turn(-30)
+                self.controller.turn(90)
 
             # 记录命令
             threading.Thread(target=self.record, args=(x, y, f_angle, self.cur_alt,
@@ -85,12 +85,12 @@ class FnSet:
 
         self.controller.is_trace = True
         detect_num = 0
-        self.cur_alt = self.command.get_alt()
 
         # 当高度低于30cm，进入一键降落。当连续五次无法检测到H，进入搜索状态
         while True:
 
             # 检测降落标志
+            self.cur_alt = self.command.get_alt()
             print("alt:", self.cur_alt)
             x, y, f_angle = self.detector.detect_h()
 
@@ -109,7 +109,7 @@ class FnSet:
                 # 记录命令
                 threading.Thread(target=self.record, args=(x, y, f_angle, self.cur_alt,
                                                            self.controller.record_info)).start()
-                if 0 < self.cur_alt <= 30:
+                if 0 < self.cur_alt <= 40:
                     return "land"
 
     def land(self):
